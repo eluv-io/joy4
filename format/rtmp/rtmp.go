@@ -8,11 +8,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/nareix/joy4/utils/bits/pio"
 	"github.com/nareix/joy4/av"
 	"github.com/nareix/joy4/av/avutil"
 	"github.com/nareix/joy4/format/flv"
 	"github.com/nareix/joy4/format/flv/flvio"
+	"github.com/nareix/joy4/utils/bits/pio"
 	"io"
 	"net"
 	"net/url"
@@ -21,6 +21,7 @@ import (
 )
 
 var Debug bool
+var DebugData bool
 
 func ParseURL(uri string) (u *url.URL, err error) {
 	if u, err = url.Parse(uri); err != nil {
@@ -1307,7 +1308,7 @@ func (self *Conn) readChunk() (err error) {
 	}
 
 	if cs.msgdataleft == 0 {
-		if Debug {
+		if DebugData {
 			fmt.Println("rtmp: chunk data")
 			fmt.Print(hex.Dump(cs.msgdata))
 		}
