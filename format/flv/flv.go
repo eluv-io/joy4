@@ -3,7 +3,6 @@ package flv
 import (
 	"bufio"
 	"fmt"
-	"github.com/nareix/joy4/utils/bits/pio"
 	"github.com/nareix/joy4/av"
 	"github.com/nareix/joy4/av/avutil"
 	"github.com/nareix/joy4/codec"
@@ -11,6 +10,7 @@ import (
 	"github.com/nareix/joy4/codec/fake"
 	"github.com/nareix/joy4/codec/h264parser"
 	"github.com/nareix/joy4/format/flv/flvio"
+	"github.com/nareix/joy4/utils/bits/pio"
 	"io"
 )
 
@@ -348,9 +348,12 @@ func (self *Muxer) WriteHeader(streams []av.CodecData) (err error) {
 	}
 
 	n := flvio.FillFileHeader(self.b, flags)
-	if _, err = self.bufw.Write(self.b[:n]); err != nil {
+
+	var nw int
+	if nw, err = self.bufw.Write(self.b[:n]); err != nil {
 		return
 	}
+	fmt.Println("SSDBG FLV Writeheader", "nw", nw)
 
 	for _, stream := range streams {
 		var tag flvio.Tag
@@ -362,6 +365,7 @@ func (self *Muxer) WriteHeader(streams []av.CodecData) (err error) {
 			if err = flvio.WriteTag(self.bufw, tag, 0, self.b); err != nil {
 				return
 			}
+			fmt.Println("SSDBG FLV Writeheader", "WriteTag", tag)
 		}
 	}
 

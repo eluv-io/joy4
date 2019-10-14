@@ -106,7 +106,7 @@ func (self *Server) ListenAndServe() (err error) {
 	return self.Serve(listener)
 }
 
-// Serve will accept connections on a given net.Listener and instanciate
+// Serve will accept connections on a given net.Listener and instantiate
 // RTMP clients for each connection.
 func (self *Server) Serve(listener net.Listener) (err error) {
 	for {
@@ -156,6 +156,8 @@ type Conn struct {
 
 	txbytes uint64
 	rxbytes uint64
+
+	inpkts uint64
 
 	bufr *bufio.Reader
 	bufw *bufio.Writer
@@ -790,6 +792,10 @@ func (self *Conn) ReadPacket() (pkt av.Packet, err error) {
 
 	if !self.prober.Empty() {
 		pkt = self.prober.PopPacket()
+		self.inpkts++
+		if Debug {
+			fmt.Println("rtmp: read packet", "dts", pkt.Time, "pts", pkt.CompositionTime, "total pkts", self.inpkts)
+		}
 		return
 	}
 
@@ -801,6 +807,10 @@ func (self *Conn) ReadPacket() (pkt av.Packet, err error) {
 
 		var ok bool
 		if pkt, ok = self.prober.TagToPacket(tag, int32(self.timestamp)); ok {
+			self.inpkts++
+			if Debug {
+				fmt.Println("rtmp: read packet", "dts", pkt.Time, "pts", pkt.CompositionTime, "total pkts", self.inpkts)
+			}
 			return
 		}
 	}
@@ -1303,8 +1313,8 @@ func (self *Conn) readChunk() (err error) {
 	cs.msgdataleft -= uint32(size)
 
 	if Debug {
-		fmt.Printf("rtmp: chunk msgsid=%d msgtypeid=%d msghdrtype=%d len=%d left=%d\n",
-			cs.msgsid, cs.msgtypeid, cs.msghdrtype, cs.msgdatalen, cs.msgdataleft)
+		fmt.Printf("rtmp: chunk msgsid=%d msgtypeid=%d msghdrtype=%d len=%d left=%d timenow=%d\n",
+			cs.msgsid, cs.msgtypeid, cs.msghdrtype, cs.msgdatalen, cs.msgdataleft, cs.timenow)
 	}
 
 	if cs.msgdataleft == 0 {
