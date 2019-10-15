@@ -3,21 +3,15 @@ package main
 import (
 	"fmt"
 	"github.com/nareix/joy4/av"
-	//"github.com/nareix/joy4/av/avutil"
-	"github.com/nareix/joy4/format"
 	"github.com/nareix/joy4/format/ts"
 	"io"
 	"net"
 	"os"
 )
 
-const frameRate = 24
+const frameRate = 60
 const pktLimit = frameRate * 30
-const dbg = false
-
-func init() {
-	format.RegisterAll()
-}
+const dbg = true
 
 func main() {
 
@@ -68,7 +62,7 @@ func serveOneConnection() (err error) {
 
 	pr, pw := io.Pipe()
 
-	addr := ":12001"
+	addr := ":21001"
 
 	pc, err := net.ListenPacket("udp", addr)
 	if err != nil {

@@ -1,4 +1,6 @@
 github.com/eluv-io/joy4 v0.0.0-20191008225702-fe01f5fd129d h1:zGmiF9eFX2H+6rHtsfN+v/Tx+PGFjawA1FTZzVSihCI=
 github.com/eluv-io/joy4 v0.0.0-20191008225702-fe01f5fd129d/go.mod h1:Dw+z7vqznG90uUOkQNFE4A5dMuUUBNQpvcp9E0m5vGE=
+github.com/eluv-io/joy4 v0.0.0-20191015002143-183a1080a3a6 h1:LTSVR3GOFXO0Ld+/SZL/CP5Z/ZHNn9Lcy/bsg/CBmQM=
+github.com/eluv-io/joy4 v0.0.0-20191015002143-183a1080a3a6/go.mod h1:TewhrMGGJ9IJam+qVEaFyfC9aiEiRlwMd9FPL1AMb8Q=
 github.com/nareix/bits v0.0.0-20160729152711-1f3e16538b25 h1:RBOC779JbUMNAdAzBlGcgPxnDPekF6DNNcU7Bfj7QgM=
 github.com/nareix/bits v0.0.0-20160729152711-1f3e16538b25/go.mod h1:EUjC5oRX9lYvGrj71OCU46JEGzlUQ0UuGZsb8ABI+dQ=
