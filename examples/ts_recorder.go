@@ -11,6 +11,10 @@ import (
 	"os"
 )
 
+const frameRate = 24
+const pktLimit = frameRate * 30
+const dbg = false
+
 func init() {
 	format.RegisterAll()
 }
@@ -21,16 +25,24 @@ func main() {
 
 }
 
-func record(demux av.Demuxer) {
-	f1, _ := os.Create("ts_out_1.ts")
+func record(demux av.Demuxer, i int) error {
+
+	f1, err := os.Create(fmt.Sprintf("ts_out_%00d.ts", i))
+	if err != nil {
+		fmt.Println("ts_recorder: failed to open recording", "err", err)
+		return err
+	}
 	mux := ts.NewMuxer(f1)
+
 	CopyFile(mux, demux)
 	f1.Close()
+
+	return nil
 }
 
 func readUdp(pc net.PacketConn, w io.Writer) error {
 
-	buf := make([]byte, 2^16)
+	buf := make([]byte, 65536)
 
 	for {
 		n, sender, err := pc.ReadFrom(buf)
@@ -39,7 +51,9 @@ func readUdp(pc net.PacketConn, w io.Writer) error {
 			return err
 		}
 
-		fmt.Println("te_recorder: packet received", "bytes", n, "from", sender.String())
+		if dbg {
+			fmt.Println("te_recorder: packet received", "bytes", n, "from", sender.String())
+		}
 
 		bw, err := w.Write(buf[:n])
 		if err != nil || bw != n {
@@ -72,7 +86,12 @@ func serveOneConnection() (err error) {
 	}()
 
 	go func() {
-		record(demux)
+		for i := 1; i < 4; i++ {
+			err := record(demux, i)
+			if err != nil {
+				fmt.Println("rtmp_recorder: recording failed", "err", err)
+			}
+		}
 		done <- true
 	}()
 
@@ -80,8 +99,6 @@ func serveOneConnection() (err error) {
 
 	return
 }
-
-var pktLimit = 60
 
 func CopyPackets(dst av.PacketWriter, src av.PacketReader) (err error) {
 	for npkts := 0; npkts < pktLimit; npkts++ {
