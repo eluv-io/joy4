@@ -42,22 +42,25 @@ func NewMuxer(w io.Writer) *Muxer {
 }
 
 func (self *Muxer) newStream(codec av.CodecData) (err error) {
-	ok := false
-	for _, c := range CodecTypes {
-		if codec.Type() == c {
-			ok = true
-			break
+
+	if codec != nil {
+		ok := false
+		for _, c := range CodecTypes {
+			if codec.Type() == c {
+				ok = true
+				break
+			}
 		}
-	}
-	if !ok {
-		err = fmt.Errorf("ts: codec type=%s is not supported", codec.Type())
-		return
+		if !ok {
+			err = fmt.Errorf("ts: codec type=%s is not supported", codec.Type())
+			return
+		}
 	}
 
 	pid := uint16(len(self.streams) + 0x100)
 	stream := &Stream{
 		muxer:     self,
-		CodecData: codec,
+		CodecData: codec, // may be nil for unsupported streams
 		pid:       pid,
 		tsw:       tsio.NewTSWriter(pid),
 	}
@@ -77,6 +80,9 @@ func (self *Muxer) writePaddingTSPackets(tsw *tsio.TSWriter) (err error) {
 func (self *Muxer) WriteTrailer() (err error) {
 	if self.PaddingToMakeCounterCont {
 		for _, stream := range self.streams {
+			if stream.CodecData == nil {
+				continue
+			}
 			if err = self.writePaddingTSPackets(stream.tsw); err != nil {
 				return
 			}
@@ -105,6 +111,9 @@ func (self *Muxer) WritePATPMT() (err error) {
 
 	var elemStreams []tsio.ElementaryStreamInfo
 	for _, stream := range self.streams {
+		if stream.CodecData == nil {
+			continue
+		}
 		switch stream.Type() {
 		case av.AAC:
 			elemStreams = append(elemStreams, tsio.ElementaryStreamInfo{
@@ -154,6 +163,10 @@ func (self *Muxer) WriteHeader(streams []av.CodecData) (err error) {
 
 func (self *Muxer) WritePacket(pkt av.Packet) (err error) {
 	stream := self.streams[pkt.Idx]
+
+	if stream.CodecData == nil {
+		return
+	}
 	pkt.Time += time.Second
 
 	switch stream.Type() {
